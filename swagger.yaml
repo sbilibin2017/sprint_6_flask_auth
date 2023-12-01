@@ -1,0 +1,268 @@
+swagger: '2.0'
+info:
+  title: Апи для аутентификации и авторизации - Swagger 2.0
+  description: Данный апи реализует КРУД для пользователей и ролей, чтение всех сессиий и сессий конкретных пользователей. Авторизация и аутентификация производится с помощью JWT-токенов (access, refresh). 
+  version: v1
+
+schemes:
+  - http
+  - https
+basePath: /
+
+tags:
+- name: admin/user
+  description: Администрирование пользователей
+- name: admin/role
+  description: Администрирование ролей
+- name: token
+  description: Создание и обновление JWT-токенов
+- name: auth
+  description: Регистрация, вход, выход пользователя
+
+paths:
+  /admin/user:
+    post:
+      summary: Создать пользователя
+      security:
+        - JWT: []
+      tags:
+        - admin/user
+      responses:
+        '200':
+          description: Создан один пользователь
+  /admin/user/{id}:
+    get:
+      summary: Получить пользователя по ID
+      tags:
+        - admin/user
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UUID пользователя
+      responses:
+        '200':
+          description: Получить пользователя
+    put:
+      summary: Изменить пользователя по ID
+      tags:
+        - admin/user
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UUID пользователя
+        - in: body
+          name: Пользователь
+          description: Изменить пользователя
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              login:
+                type: string
+              password:
+                type: string              
+              created_at:
+                type: string
+              updated_at:
+                type: string
+      responses:
+        '200':
+          description: Изменеить пользователя
+    delete:
+      summary: Удалить пользователя по ID
+      tags:
+        - admin/user
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UUID пользователя
+      responses:
+        '200':
+          description: Удалить пользователя
+  
+  /admin/users:
+    get:
+      summary: Получить всех пользователей
+      tags:
+        - admin/user
+      responses:
+        '200':
+          description: Получены все пользователи
+  /admin/user/{id}/sessions:
+    get:
+      summary: Получить сессии пользователя по ID
+      tags:
+        - admin/user
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UUID пользователя
+      responses:
+        '200':
+          description: Получены сессии одного пользователя
+  /admin/users/sessions:
+    get:
+      summary: Получить сессии всех пользователей
+      tags:
+        - admin/user
+      responses:
+        '200':
+          description: Получены сессии всех пользователей
+  /admin/role:
+    post:
+      summary: Создать роль.
+      security:
+        - JWT: []
+      tags:
+        - admin/role
+      responses:
+        '200':
+          description: Создана одна роль
+  /admin/role/{id}:
+    get:
+      summary: Получить роль по ID
+      tags:
+        - admin/role
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UUID роли
+      responses:
+        '200':
+          description: Получить роль
+    put:
+      summary: Изменить роль по ID
+      tags:
+        - admin/role
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UUID роли
+        - in: body
+          name: Роль
+          description: Изменить роль
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string   
+              created_at:
+                type: string
+              updated_at:
+                type: string           
+      responses:
+        '200':
+          description: Изменеить роль
+    delete:
+      summary: Удалить роль по ID
+      tags:
+        - admin/role
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UUID роли
+      responses:
+        '200':
+          description: Удалить роль
+  
+  /admin/roles:
+    get:
+      summary: Получить все роли
+      tags:
+        - admin/role
+      responses:
+        '200':
+          description: Получены все роли
+          
+  /token/refresh:
+    post:
+      summary: Обновить пару токенов(access+refresh)
+      security:
+        - JWT: []
+      tags:
+        - token
+      responses:
+        '200':
+          description: Создана новая пара токенов(access+refresh)
+          
+  /auth/register:
+    post:
+      summary: Создать аккаунт
+      security:
+        - JWT: []
+      tags:
+        - account
+      parameters:
+        - in: body
+          name: регистрация
+          description: регистрация пользователя
+          schema:
+            type: object
+            properties:
+              login:
+                type: string
+              password:
+                type: string 
+      responses:
+        '200':
+          description: Создан аккаунт
+  /auth/login:
+    post:
+      summary: Войти в аккаунт
+      security:
+        - JWT: []
+      tags:
+        - account
+      parameters:
+        - in: body
+          name: логин
+          description: вход пользователя в аккаунт
+          schema:
+            type: object
+            properties:
+              login:
+                type: string
+              password:
+                type: string 
+      responses:
+        '200':
+          description: Получена пара JWT-токенов(access+refresh)
+  /auth/logout:
+    delete:
+      summary: Выйти из аккаунта
+      security:
+        - JWT: []
+      tags:
+        - account
+      responses:
+        '200':
+          description: Выполнен выход из аккаунта, access токен добавлен в черный список  
+          
+securityDefinitions:  
+  JWT:  
+    type: apiKey  
+    in: header  
+    name: access_token  
+ 
+ 
+
+    
+  
+          

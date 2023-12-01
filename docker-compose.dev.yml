@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+
+  postgres:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    env_file:
+      - ./env/postgres/.env.dev
+
+  redis:
+    image: redis:7.0.8    
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    env_file:
+      - ./env/redis/.env.dev  
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.dev
+    image: app-image
+    volumes:
+      - ./env:/env      
+      - ./app:/app
+      - ./.env:/.env
+    ports:
+      - 5000:5000
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+    env_file:
+      - ./env/redis/.env.dev
+      - ./env/postgres/.env.dev
+      - ./env/docker/.env.dev  
+
+  tests_functional:
+    image: app-image  
+    volumes:
+      - ./env:/env      
+      - ./app:/app
+      - ./.env:/.env
+    entrypoint: >
+      sh -c "python3 ./tests/connections/wait_for_postgres.py
+      && python3 ./tests/connections/wait_for_redis.py
+      && pytest ./tests/functional/api/test_auth.py
+      && pytest ./tests/functional/api/admin/test_role.py"
+    depends_on:
+      app:
+        condition: service_started  
+
+  # tests_unit:
+  #   image: app-image  
+  #   volumes:
+  #     - ./env:/env      
+  #     - ./app:/app
+  #     - ./.env:/.env
+  #   entrypoint: >
+  #     sh -c "python3 ./tests/connections/wait_for_postgres.py
+  #     && python3 ./tests/connections/wait_for_redis.py
+  #     && pytest ./tests/unit/src/dataclasses/test_auth.py
+  #     && pytest ./tests/unit/src/dataclasses/test_payload.py
+  #     && pytest ./tests/unit/src/dataclasses/test_session.py
+  #     && pytest ./tests/unit/src/repositories/crud/test_crud.py"
+  #   depends_on:
+  #     app:
+  #       condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
